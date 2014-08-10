@@ -1,0 +1,18 @@
+[Unit]
+Description=Register for margarita service
+BindsTo=margarita@%i.service
+After=margarita@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+RemainAfterExit=yes
+ExecStart=/bin/sh -c "/bin/etcdctl set \"/vulcand/upstreams/margarita.whitbyschool.net/endpoints/margarita-register@%i.service\" http://$COREOS_PUBLIC_IPV4:%i; \
+  /bin/etcdctl set \"/vulcand/hosts/margarita.whitbyschool.net/locations/home/path\" '/.*'; \
+  /bin/etcdctl set \"/vulcand/hosts/margarita/locations/home/path\" '/.*'; \
+  /bin/etcdctl set /vulcand/hosts/margarita.whitbyschool.net/locations/home/upstream margarita.whitbyschool.net; \
+  /bin/etcdctl set /vulcand/hosts/margarita/locations/home/upstream margarita.whitbyschool.net"
+ExecStop=/bin/sh -c "/bin/etcdctl rm /vulcand/upstreams/margarita.whitbyschool.net/endpoints/margarita-register@%i.service"
+
+[X-Fleet]
+X-ConditionMachineOf=margarita@%i.service
+

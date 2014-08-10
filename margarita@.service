@@ -1,0 +1,11 @@
+[Unit]
+Description=Start Margarita Server
+After=reposado-data.service
+Requires=docker.service
+
+[Service]
+ExecStartPre=-/usr/bin/docker kill margarita-%i
+ExecStartPre=-/usr/bin/docker rm -f margarita-%i
+ExecStartPre=/usr/bin/docker pull macadmins/reposado
+ExecStart=/usr/bin/docker run --rm --name margarita-%i --volumes-from reposado-data -p %i:8089 macadmins/reposado python /home/app/margarita/margarita.py
+ExecStop=/usr/bin/docker stop margarita-%i
