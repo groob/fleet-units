@@ -1,0 +1,8 @@
+[Unit]
+Description=Data container that mounts the munki repo volume.
+After=mnt-docker_data.mount
+
+[Service]
+RemainAfterExit=yes
+ExecStartPre=/usr/bin/docker pull busybox
+ExecStart=/bin/bash -c '/usr/bin/docker start -a munki-data || /usr/bin/docker run --name munki-data -v /mnt/docker_data/munki_repo:/munki_repo busybox'

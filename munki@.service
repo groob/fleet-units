@@ -1,0 +1,11 @@
+[Unit]
+Description=Nginx Container that serves the files from the data container.
+After=munki-data.service
+Requires=docker.service
+
+[Service]
+ExecStartPre=-/usr/bin/docker kill munki-%i
+ExecStartPre=-/usr/bin/docker rm -f munki-%i
+ExecStartPre=/usr/bin/docker pull macadmins/munki
+ExecStart=/usr/bin/docker run --rm --name munki-%i --volumes-from munki-data -p %i:80 macadmins/munki
+ExecStop=-/usr/bin/docker stop munki-%i

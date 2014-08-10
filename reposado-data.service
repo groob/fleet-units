@@ -1,0 +1,8 @@
+[Unit]
+Description=Data container for reposado.
+After=mnt-docker_data.mount
+
+[Service]
+RemainAfterExit=yes
+ExecStartPre=/usr/bin/docker pull busybox
+ExecStart=/bin/bash -c '/usr/bin/docker start -a reposado-data || /usr/bin/docker run --name reposado-data -v /mnt/docker_data/reposado/metadata:/reposado/metadata -v /mnt/docker_data/reposado/html:/reposado/html busybox'

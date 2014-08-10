@@ -1,0 +1,9 @@
+[Unit]
+Description=Nginx Container that serves the files from the data container.
+After=reposado-data.service
+Requires=docker.service
+
+[Service]
+ExecStartPre=/usr/bin/docker pull macadmins/reposado:margarita
+ExecStart=/usr/bin/docker run --rm --name margarita --volumes-from reposado-data -p 8089:8089 macadmins/reposado:margarita python /home/app/margarita/margarita.py
+ExecStop=/usr/bin/docker rm -f margarita

@@ -1,0 +1,18 @@
+[Unit]
+Description=Register for MunkiWebAdmin service
+BindsTo=munkiwebadmin@%i.service
+After=munkiwebadmin@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+RemainAfterExit=yes
+ExecStart=/bin/sh -c "/bin/etcdctl set \"/vulcand/upstreams/munkiwebadmin.whitbyschool.net/endpoints/munkiwebadmin-register@%i.service\" http://$COREOS_PUBLIC_IPV4:%i; \
+  /bin/etcdctl set \"/vulcand/hosts/munkiwebadmin.whitbyschool.net/locations/home/path\" '/.*'; \
+  /bin/etcdctl set \"/vulcand/hosts/munkiwebadmin/locations/home/path\" '/.*'; \
+  /bin/etcdctl set /vulcand/hosts/munkiwebadmin.whitbyschool.net/locations/home/upstream munkiwebadmin.whitbyschool.net; \
+  /bin/etcdctl set /vulcand/hosts/munkiwebadmin/locations/home/upstream munkiwebadmin.whitbyschool.net"
+ExecStop=/bin/sh -c "/bin/etcdctl rm /vulcand/upstreams/munkiwebadmin.whitbyschool.net/endpoints/munkiwebadmin-register@%i.service"
+
+[X-Fleet]
+X-ConditionMachineOf=munkiwebadmin@%i.service
+

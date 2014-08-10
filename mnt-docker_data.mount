@@ -1,0 +1,12 @@
+[Unit]
+Description = Mounts NAS to /mnt
+
+[Mount]
+What = nas.whitbyschool.net:/docker-data
+Where = /mnt/docker_data
+Type = nfs
+Options=nolock,proto=tcp,port=2049
+
+[Install]
+WantedBy = multi-user.target
+

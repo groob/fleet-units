@@ -1,0 +1,13 @@
+[Unit]
+Description=MunkiWebAdmin container
+After=munki-data.service
+After=postgres-munkiwebadmin.service
+Requires=docker.service
+ 
+[Service]
+EnvironmentFile=/etc/environment
+ExecStartPre=-/usr/bin/docker kill munkiwebadmin-%i
+ExecStartPre=-/usr/bin/docker rm -f munkiwebadmin-%i
+ExecStartPre=/usr/bin/docker pull macadmins/munkiwebadmin
+ExecStart=/usr/bin/docker run --rm --name munkiwebadmin-%i --volumes-from munki-data -p %i:80 --link postgres-munkiwebadmin:db -e DB_NAME=munkiwebadmin -e DB_USER=admin -e DB_PASS=$MUNKIWEBADMIN_DB_PASS -e MANIFEST_USERNAME_IS_EDITABLE=True -e WARRANTY_LOOKUP_ENABLED=True -e MODEL_LOOKUP_ENABLED=True -e VIRTUAL_HOST=munkiwebadmin.whitbyschool.net macadmins/munkiwebadmin
+ExecStop=-/usr/bin/docker stop munkiwebadmin-%i

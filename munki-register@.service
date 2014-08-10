@@ -1,0 +1,18 @@
+[Unit]
+Description=Register for Munki service
+BindsTo=munki@%i.service
+After=munki@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+RemainAfterExit=yes
+ExecStart=/bin/sh -c "/bin/etcdctl set \"/vulcand/upstreams/munki.whitbyschool.net/endpoints/munki-register@%i.service\" http://$COREOS_PUBLIC_IPV4:%i; \
+  /bin/etcdctl set \"/vulcand/hosts/munki.whitbyschool.net/locations/home/path\" '/.*'; \
+  /bin/etcdctl set \"/vulcand/hosts/munki/locations/home/path\" '/.*'; \
+  /bin/etcdctl set /vulcand/hosts/munki.whitbyschool.net/locations/home/upstream munki.whitbyschool.net; \
+  /bin/etcdctl set /vulcand/hosts/munki/locations/home/upstream munki.whitbyschool.net"
+ExecStop=/bin/sh -c "/bin/etcdctl rm /vulcand/upstreams/munki.whitbyschool.net/endpoints/munki-register@%i.service"
+
+[X-Fleet]
+X-ConditionMachineOf=munki@%i.service
+

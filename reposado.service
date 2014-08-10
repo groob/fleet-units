@@ -1,0 +1,9 @@
+[Unit]
+Description=Nginx Container that serves the files from the data container.
+After=reposado-data.service
+Requires=docker.service
+
+[Service]
+ExecStartPre=/usr/bin/docker pull macadmins/reposado:margarita
+ExecStart=/usr/bin/docker run --rm --name reposado --volumes-from reposado-data -p 8080:8080 macadmins/reposado:margarita
+ExecStop=/usr/bin/docker rm -f reposado

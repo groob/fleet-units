@@ -1,0 +1,8 @@
+[Unit]
+Description=Data container that mounts ds repo.
+After=mnt-docker_data.mount
+
+[Service]
+RemainAfterExit=yes
+ExecStartPre=/usr/bin/docker pull busybox
+ExecStart=/bin/bash -c '/usr/bin/docker start -a spirit-data || /usr/bin/docker run --name spirit-data -v /mnt/docker_data/spirit/ds_repo:/home/app/spirit/ds_repo busybox'

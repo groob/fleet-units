@@ -1,0 +1,7 @@
+[Unit]
+Description=Data container for postgres-munkiwebadmin
+After=mnt-docker_data.mount
+
+[Service]
+ExecStartPre=/usr/bin/docker pull busybox
+ExecStart=/bin/bash -c '/usr/bin/docker start -a munkiwebadmin-pgdata || /usr/bin/docker run --name munkiwebadmin-pgdata -v /mnt/docker_data/postgres/munkiwebadmin/data:/var/lib/postgresql/data busybox'
