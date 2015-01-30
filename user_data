@@ -59,7 +59,7 @@ coreos:
     enable: true
     content: |
       [Unit]
-      Description=Nginx Container with Munki Repo.
+      Description=SMB share to mount munki-repo
       After=munki-data.service
       Requires=docker.service
 
