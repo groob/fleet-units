@@ -54,4 +54,45 @@ coreos:
       ExecStartPre=/usr/bin/docker pull macadmins/munki
       ExecStart=/usr/bin/docker run --rm --name munki --volumes-from munki-data -p 80:80 macadmins/munki
       ExecStop=-/usr/bin/docker stop munki
+  - name: smb-munki.service
+    command: start
+    enable: true
+    content: |
+      [Unit]
+      Description=Nginx Container with Munki Repo.
+      After=munki-data.service
+      Requires=docker.service
+
+      [Service]
+      ExecStartPre=-/usr/bin/docker kill smb-munki
+      ExecStartPre=-/usr/bin/docker rm -f smb-munki
+      ExecStartPre=/usr/bin/docker pull nmcspadden/smb-munki
+      ExecStart=/usr/bin/docker run --rm --name smb-munki --volumes-from munki-data -p 445:445 nmcspadden/smb-munki
+      ExecStartPost=/usr/bin/docker exec smb-munki chown -R nobody:nogroup /munki_repo/
+      ExecStartPost=/usr/bin/docker exec smb-munki chmod -R ugo+rwx /munki_repo/
+      ExecStop=-/usr/bin/docker stop smb-munki
+  - name: reposado-data.service
+    command: start
+    enable: true
+    content: |
+      [Unit]
+      Description=Data Container for Reposado
+      Requires=docker.service
+
+      [Service]
+      RemainAfterExit=yes
+      ExecStartPre=/usr/bin/docker pull busybox
+      ExecStart=/bin/bash -c '/usr/bin/docker start -a reposado-data || /usr/bin/docker run --name reposado-data -v /reposado/metadata -v /reposado/html busybox'
+  - name: postgres-data-munkiwebadmin.service
+    command: start
+    enable: true
+    content: |
+      [Unit]
+      Description=Data Container for Postgres data of MunkiWebAdmin container
+      Requires=docker.service
+
+      [Service]
+      RemainAfterExit=yes
+      ExecStartPre=/usr/bin/docker pull busybox
+      ExecStart=/bin/bash -c '/usr/bin/docker start -a postgres-data-munkiwebadmin || /usr/bin/docker run --name postgres-data-munkiwebadmin -v /var/lib/postgresql/data busybox'
 
