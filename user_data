@@ -95,4 +95,63 @@ coreos:
       RemainAfterExit=yes
       ExecStartPre=/usr/bin/docker pull busybox
       ExecStart=/bin/bash -c '/usr/bin/docker start -a postgres-data-munkiwebadmin || /usr/bin/docker run --name postgres-data-munkiwebadmin -v /var/lib/postgresql/data busybox'
+  - name: postgres-data-sal.service
+    command: start
+    enable: true
+    content: |
+      [Unit]
+      Description=Data Container for Postgres data of Sal container
+      Requires=docker.service
 
+      [Service]
+      RemainAfterExit=yes
+      ExecStartPre=/usr/bin/docker pull busybox
+      ExecStart=/bin/bash -c '/usr/bin/docker start -a postgres-data-sal || /usr/bin/docker run --name postgres-data-sal -v /var/lib/postgresql/data busybox'
+  - name: postgres-munkiwebadmin.service
+    command: start
+    enable: true
+    content: |
+      [Unit]
+      Description=PostgreSQL-MunkiWebAdmin
+      After=docker.service
+      Requires=docker.service
+
+      [Service]
+      ExecStartPre=-/usr/bin/docker kill postgres-munkiwebadmin
+      ExecStartPre=-/usr/bin/docker rm -f postgres-munkiwebadmin
+      ExecStartPre=/usr/bin/docker pull postgres:9.3.5
+      ExecStart=/usr/bin/docker run --rm --name postgres-munkiwebadmin --volumes-from postgres-data-munkiwebadmin postgres:9.3.5
+      ExecStartPost=/bin/bash -c 'until docker logs postgres-munkiwebadmin 2>&1 | grep "system is ready to accept connections";do echo "waiting";sleep 1;done;'
+      ExecStop=-/usr/bin/docker stop postgres-munkiwebadmin
+  - name: munkiwebadmin.service
+    command: start
+    enable: true
+    content: |
+      [Unit]
+      Description=MunkiWebAdmin container
+      After=munki-data.service
+      After=postgres-munkiwebadmin.service
+      Requires=docker.service
+
+      [Service]
+      EnvironmentFile=/etc/environment
+      ExecStartPre=-/usr/bin/docker kill munkiwebadmin
+      ExecStartPre=-/usr/bin/docker rm -f munkiwebadmin
+      ExecStartPre=/usr/bin/docker pull macadmins/munkiwebadmin
+      ExecStart=/usr/bin/docker run --rm --name munkiwebadmin --volumes-from munki-data -p 8081:80 --link postgres-munkiwebadmin:db -e DB_NAME=munkiwebadmin -e DB_USER=admin -e DB_PASS=$MUNKIWEBADMIN_DB_PASS -e MANIFEST_USERNAME_IS_EDITABLE=True -e WARRANTY_LOOKUP_ENABLED=True -e MODEL_LOOKUP_ENABLED=True -e VIRTUAL_HOST=munkiwebadmin.whitbyschool.net macadmins/munkiwebadmin
+      ExecStop=-/usr/bin/docker stop munkiwebadmin
+  - name: reposado.service
+    command: start
+    enable: true
+    content: |
+      [Unit]
+      Description=Reposado and Margarita Container
+      After=reposado-data.service
+      Requires=docker.service
+
+      [Service]
+      ExecStartPre=-/usr/bin/docker kill reposado
+      ExecStartPre=-/usr/bin/docker rm -f reposado
+      ExecStartPre=/usr/bin/docker pull macadmins/reposado
+      ExecStart=/usr/bin/docker run --rm --name reposado --volumes-from reposado-data -p 8080:8080 -p 8089:8089 macadmins/reposado
+      ExecStop=-/usr/bin/docker stop reposado
