@@ -3,3 +3,4 @@
 !*.gitignore
 !*.mount
 !*.network
+!user_data
